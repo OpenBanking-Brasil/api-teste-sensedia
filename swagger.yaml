@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: API Automatic Payments - Open Finance Brasil
   description: |
-    API de Iniciação de Pagamentos automáticos, responsável por viabilizar as operações de iniciação de pagamentos automáticos (Pix automático e Transferências Inteligentes) para o Open Finance Brasil. 
+    API de Iniciação de Pagamentos automáticos de Teste de infra, responsável por viabilizar as operações de iniciação de pagamentos automáticos (Pix automático e Transferências Inteligentes) para o Open Finance Brasil. 
     Para cada uma das formas de pagamento previstas é necessário obter prévio consentimento do cliente através dos endpoints dedicados ao consentimento nesta API.
 
     # Orientações
@@ -386,7 +386,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateRecurringPixPayment'
         description: Payload para criação da iniciação do pagamento Pix.
-        required: false
+        required: true
       responses:
         '201':
           $ref: '#/components/responses/201RecurringPaymentsIdPost'
@@ -549,7 +549,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchPixPayment'
         description: Atualização do Pagamento Recorrente.
-        required: false
+        required: true
       responses:
         '200':
           $ref: '#/components/responses/200RecurringPaymentsIdPatch'
@@ -884,14 +884,6 @@ components:
                   - CANCELAMENTO_FORA_PERIODO_PERMITIDO: O usuário solicitou o cancelamento fora da janela de tempo permitido.
         meta:
           $ref: '#/components/schemas/Meta'
-    BusinessEntity:
-      type: object
-      description: |
-        Usuário (pessoa jurídica) que encontra-se logado na instituição Iniciadora de Pagamento.
-        
-        [Restrição] Preenchimento obrigatório se usuário logado na instituição Iniciadora de Pagamento for um CNPJ (pessoa jurídica).
-      required:
-        - document
       properties:
         document:
           type: object
@@ -902,7 +894,7 @@ components:
             identification:
               type: string
               maxLength: 14
-              description: Números dos documentos de identificação oficial do titular pessoa jurídica.
+              description: Número do documento de identificação oficial do titular pessoa jurídica.
               example: '11111111111111'
               pattern: '^\d{14}$'
             rel:
@@ -918,7 +910,7 @@ components:
       properties:
         data:
           type: object
-          description: Objetos contendo as informações de consentimento para a iniciação de pagamento individuais.
+          description: Objeto contendo as informações de consentimento para a iniciação de pagamento individual.
           required:
             - loggedUser
             - creditors
@@ -926,8 +918,6 @@ components:
           properties:
             loggedUser:
               $ref: '#/components/schemas/LoggedUser'
-            businessEntity:
-              $ref: '#/components/schemas/BusinessEntity'
             creditors:
               $ref: '#/components/schemas/Creditors'
             expirationDateTime:
@@ -1351,7 +1341,7 @@ components:
       properties:
         deviceId:
           type: string
-          description: ID não único do dispositivo gerado pela plataforma.
+          description: ID único do dispositivo gerado pela plataforma.
           example: 00000000-54b3-e7c7-0000-000046bffd97
         isRootedDevice:
           type: boolean
@@ -1370,7 +1360,7 @@ components:
           description: Indica por quanto tempo (em milissegundos) o dispositivo está ligado.
         osVersion:
           type: string
-          description: Versão do sistema operacional Windows.
+          description: Versão do sistema operacional.
         userTimeZoneOffset:
           type: string
           description: |
@@ -1429,7 +1419,7 @@ components:
           description: Indica se o dispositivo está em modo de desenvolvedor.
         isMockGPS:
           type: boolean
-          description: Indica se o dispositivo está usando um GPS falso ou não.
+          description: Indica se o dispositivo está usando um GPS falso.
         isEmulated:
           type: boolean
           description: Indica se o dispositivo é emulado ou real.
@@ -3238,8 +3228,6 @@ components:
                 [Restrição] Caso esse campo não seja enviado pelo iniciador na requisição, o detentor deve preencher esse campo com o mesmo valor atribuído ao campo /data/creationDateTime. Caso o campo /data/startDateTime enviado seja anterior ao valor do campo /data/creationDateTime, o detentor deve substituir o valor do campo /data/startDateTime pelo valor do campo /data/creationDateTime
             loggedUser:
               $ref: '#/components/schemas/LoggedUser'
-            businessEntity:
-              $ref: '#/components/schemas/BusinessEntity'
             status:
               $ref: '#/components/schemas/EnumAuthorisationStatusType'
             creditors:
@@ -3444,8 +3432,6 @@ components:
                 Data e hora em que o consentimento teve o status atualizado. Uma string com data e hora conforme especificação [RFC-3339](https://datatracker.ietf.org/doc/html/rfc3339), sempre com a utilização de timezone UTC(UTC time format).
             loggedUser:
               $ref: '#/components/schemas/LoggedUser'
-            businessEntity:
-              $ref: '#/components/schemas/BusinessEntity'
             status:
               $ref: '#/components/schemas/EnumAuthorisationStatusType'
             creditors:
@@ -3620,8 +3606,6 @@ components:
                 Data e hora em que o consentimento teve o status atualizado. Uma string com data e hora conforme especificação [RFC-3339](https://datatracker.ietf.org/doc/html/rfc3339), sempre com a utilização de timezone UTC(UTC time format).
             loggedUser:
               $ref: '#/components/schemas/LoggedUser'
-            businessEntity:
-              $ref: '#/components/schemas/BusinessEntity'
             status:
               $ref: '#/components/schemas/EnumAuthorisationStatusType'
             creditors:
