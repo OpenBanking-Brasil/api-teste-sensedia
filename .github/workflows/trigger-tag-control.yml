@@ -17,7 +17,7 @@ jobs:
       - name: Read Swagger version and title
         id: swagger_info
         run: |
-          VERSION=$(grep 'version:' swagger.yaml | awk '{print $2}')
+          VERSION=$(grep 'version:' swagger.yaml | awk '{print $2}' | xargs)
           TITLE=$(awk '/^info:/ {found=1} found && /title:/ {sub(/title: /, ""); print; exit}' swagger.yaml | xargs)
           echo "Swagger version: $VERSION"
           echo "Swagger title: $TITLE"
