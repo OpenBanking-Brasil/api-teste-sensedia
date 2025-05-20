@@ -5,6 +5,7 @@ on:
     types:
       - opened
       - synchronize
+      - reopened
     branches:
       - main
 
@@ -61,3 +62,48 @@ jobs:
                 \"PR_AUTHOR\": \"${{ env.PR_AUTHOR }}\"
               }
             }"
+      - name: Esperar execução do CI/CD
+        run: |
+          echo "⏳ Aguardando execução do workflow no CI/CD..."
+
+          # Pega a execução mais recente do workflow para o branch main
+          for i in {1..60}; do
+            RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.REPO_ACCESS_TOKEN }}" \
+              "https://api.github.com/repos/OpenBanking-Brasil/CI-CD-OFB/actions/runs?branch=main&event=workflow_dispatch" \
+              | jq -r '.workflow_runs[] | select(.name == "pr-validation-and-jira") | .id' | head -n 1)
+
+            if [[ "$RUN_ID" != "" ]]; then
+              echo "🆔 Encontrado RUN_ID: $RUN_ID"
+              break
+            fi
+            sleep 5
+          done
+
+          if [[ "$RUN_ID" == "" ]]; then
+            echo "❌ Não foi possível encontrar a execução do workflow."
+            exit 1
+          fi
+
+          # Agora aguarda a finalização do workflow
+          for i in {1..100}; do
+            STATUS=$(curl -s -H "Authorization: token ${{ secrets.REPO_ACCESS_TOKEN }}" \
+              "https://api.github.com/repos/OpenBanking-Brasil/CI-CD-OFB/actions/runs/$RUN_ID" \
+              | jq -r '.status')
+
+            CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.REPO_ACCESS_TOKEN }}" \
+              "https://api.github.com/repos/OpenBanking-Brasil/CI-CD-OFB/actions/runs/$RUN_ID" \
+              | jq -r '.conclusion')
+
+            echo "⏱️ Status: $STATUS | Conclusão: $CONCLUSION"
+
+            if [[ "$STATUS" == "completed" ]]; then
+              if [[ "$CONCLUSION" != "success" ]]; then
+                echo "❌ Workflow do CI/CD falhou!"
+                exit 1
+              fi
+              echo "✅ Workflow do CI/CD finalizado com sucesso."
+              break
+            fi
+            sleep 10
+          done
+
