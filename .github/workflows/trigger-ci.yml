@@ -64,13 +64,14 @@ jobs:
             }"
       - name: Esperar execução do CI/CD
         run: |
+          START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           echo "⏳ Aguardando execução do workflow no CI/CD..."
 
           # Pega a execução mais recente do workflow para o branch main
           for i in {1..60}; do
             RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.REPO_ACCESS_TOKEN }}" \
               "https://api.github.com/repos/OpenBanking-Brasil/CI-CD-OFB/actions/runs?branch=main&event=workflow_dispatch" \
-              | jq -r '.workflow_runs[] | select(.name == "Validate PR and Create Jira Task") | .id' | head -n 1)
+              | jq -r '.workflow_runs[] | select(.name == "Validate PR and Create Jira Task") | select(.created_at > $START_TIME) | .id' | head -n 1)
 
             if [[ "$RUN_ID" != "" ]]; then
               echo "🆔 Encontrado RUN_ID: $RUN_ID"
